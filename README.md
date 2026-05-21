@@ -16,11 +16,6 @@ Features:
 go get github.com/Vehmloewff/speck
 ```
 
-## Imports
-
-- `github.com/Vehmloewff/speck` — the API builder, routing, OpenAPI, and JWT helpers
-- `github.com/vehmloewff/report` — structured application errors
-
 ## Quick start
 
 ```go
