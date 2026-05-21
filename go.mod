@@ -4,7 +4,7 @@ go 1.25.0
 
 require (
 	github.com/invopop/jsonschema v0.13.0
-	github.com/vehmloewff/report v0.0.0-20260521134453-96e2f1fbb6e4
+	github.com/vehmloewff/report v0.1.1
 	gopkg.in/yaml.v3 v3.0.1
 )
 
