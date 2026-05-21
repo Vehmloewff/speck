@@ -33,18 +33,20 @@ type helloOutput struct {
 	Message string `json:"message"`
 }
 
+func hello(cx speck.RouteCx) (helloOutput, report.Err) {
+	name := cx.QueryParam("name")
+	if name == "" {
+		name = "world"
+	}
+	return helloOutput{Message: "Hello, " + name + "!"}, nil
+}
+
 func main() {
 	handler := speck.New("Example API").
 		Description("Simple typed JSON API").
 		Version("1.0.0").
 		Routes(
-			speck.Get("/hello", func(cx speck.RouteCx) (helloOutput, report.Err) {
-				name := cx.QueryParam("name")
-				if name == "" {
-					name = "world"
-				}
-				return helloOutput{Message: "Hello, " + name + "!"}, nil
-			}).
+			speck.Get("/hello", hello).
 				Description("Returns a greeting.").
 				DetailQueryParam("name", "Optional name to greet."),
 		)
@@ -80,12 +82,14 @@ type createThingOutput struct {
 	ID string `json:"id"`
 }
 
-speck.Post("/things", func(cx speck.RouteCx, input createThingInput) (createThingOutput, report.Err) {
+createThing := func(cx speck.RouteCx, input createThingInput) (createThingOutput, report.Err) {
 	if input.Name == "" {
 		return createThingOutput{}, report.New("name required")
 	}
 	return createThingOutput{ID: "thing_123"}, nil
-})
+}
+
+speck.Post("/things", createThing)
 ```
 
 ## Request context
@@ -102,15 +106,17 @@ speck.Post("/things", func(cx speck.RouteCx, input createThingInput) (createThin
 Enable JWT auth for all routes on one API:
 
 ```go
+hello := func(cx speck.RouteCx) (map[string]string, report.Err) {
+	if e := cx.Token().EnsureScope("hello:read"); e != nil {
+		return nil, report.From(e)
+	}
+	return map[string]string{"sub": cx.Token().Subject}, nil
+}
+
 handler := speck.New("Secure API").
 	JWTAuth([]byte("secret-key")).
 	Routes(
-		speck.Get("/hello", func(cx speck.RouteCx) (map[string]string, report.Err) {
-			if e := cx.Token().EnsureScope("hello:read"); e != nil {
-				return nil, report.From(e)
-			}
-			return map[string]string{"sub": cx.Token().Subject}, nil
-		}),
+		speck.Get("/hello", hello),
 	)
 ```
 
